@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>元素周期表 - 发光效果</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, 60px);
+            grid-template-rows: repeat(10, 70px);
+            gap: 4px;
+            padding: 20px;
+        }
+
+        .element {
+            position: relative;
+            width: 60px;
+            height: 70px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .element::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(
+                circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                rgba(255, 255, 255, 0.3) 0%,
+                transparent 50%
+            );
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .element:hover::before {
+            opacity: 1;
+        }
+
+        .element:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 0 30px var(--glow-color, rgba(0, 255, 255, 0.6));
+        }
+
+        .element-number {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            position: absolute;
+            top: 4px;
+            left: 6px;
+        }
+
+        .element-symbol {
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        .element-name {
+            font-size: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        .element-mass {
+            font-size: 8px;
+            color: rgba(255, 255, 255, 0.6);
+            position: absolute;
+            bottom: 4px;
+        }
+
+        /* 元素类别颜色 */
+        .alkali-metal { background: linear-gradient(135deg, #ff6b6b, #ee5a5a); --glow-color: rgba(255, 107, 107, 0.6); }
+        .alkaline-earth { background: linear-gradient(135deg, #feca57, #ff9f43); --glow-color: rgba(254, 202, 87, 0.6); }
+        .transition-metal { background: linear-gradient(135deg, #48dbfb, #0abde3); --glow-color: rgba(72, 219, 251, 0.6); }
+        .post-transition { background: linear-gradient(135deg, #1dd1a1, #10ac84); --glow-color: rgba(29, 209, 161, 0.6); }
+        .metalloid { background: linear-gradient(135deg, #5f27cd, #341f97); --glow-color: rgba(95, 39, 205, 0.6); }
+        .nonmetal { background: linear-gradient(135deg, #54a0ff, #2e86de); --glow-color: rgba(84, 160, 255, 0.6); }
+        .halogen { background: linear-gradient(135deg, #00d2d3, #01a3a4); --glow-color: rgba(0, 210, 211, 0.6); }
+        .noble-gas { background: linear-gradient(135deg, #ff9ff3, #f368e0); --glow-color: rgba(255, 159, 243, 0.6); }
+        .lanthanide { background: linear-gradient(135deg, #ff6348, #e55039); --glow-color: rgba(255, 99, 72, 0.6); }
+        .actinide { background: linear-gradient(135deg, #f368e0, #9b59b6); --glow-color: rgba(243, 104, 224, 0.6); }
+        .unknown { background: linear-gradient(135deg, #576574, #222f3e); --glow-color: rgba(87, 101, 116, 0.6); }
+
+        /* 图例 */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            max-width: 1200px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .periodic-table {
+                grid-template-columns: repeat(18, 45px);
+                grid-template-rows: repeat(10, 55px);
+                gap: 2px;
+            }
+            .element {
+                width: 45px;
+                height: 55px;
+            }
+            .element-symbol {
+                font-size: 14px;
+            }
+            .element-name, .element-mass, .element-number {
+                font-size: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>元素周期表</h1>
+    <div class="periodic-table" id="periodicTable"></div>
+    
+    <div class="legend">
+        <div class="legend-item"><div class="legend-color alkali-metal"></div>碱金属</div>
+        <div class="legend-item"><div class="legend-color alkaline-earth"></div>碱土金属</div>
+        <div class="legend-item"><div class="legend-color transition-metal"></div>过渡金属</div>
+        <div class="legend-item"><div class="legend-color post-transition"></div>贫金属</div>
+        <div class="legend-item"><div class="legend-color metalloid"></div>类金属</div>
+        <div class="legend-item"><div class="legend-color nonmetal"></div>非金属</div>
+        <div class="legend-item"><div class="legend-color halogen"></div>卤素</div>
+        <div class="legend-item"><div class="legend-color noble-gas"></div>稀有气体</div>
+        <div class="legend-item"><div class="legend-color lanthanide"></div>镧系</div>
+        <div class="legend-item"><div class="legend-color actinide"></div>锕系</div>
+    </div>
+
+    <script>
+        const elements = [
+            {n:1,s:'H',name:'氢',m:'1.008',c:'nonmetal',x:1,y:1},
+            {n:2,s:'He',name:'氦',m:'4.003',c:'noble-gas',x:18,y:1},
+            {n:3,s:'Li',name:'锂',m:'6.941',c:'alkali-metal',x:1,y:2},
+            {n:4,s:'Be',name:'铍',m:'9.012',c:'alkaline-earth',x:2,y:2},
+            {n:5,s:'B',name:'硼',m:'10.81',c:'metalloid',x:13,y:2},
+            {n:6,s:'C',name:'碳',m:'12.01',c:'nonmetal',x:14,y:2},
+            {n:7,s:'N',name:'氮',m:'14.01',c:'nonmetal',x:15,y:2},
+            {n:8,s:'O',name:'氧',m:'16.00',c:'nonmetal',x:16,y:2},
+            {n:9,s:'F',name:'氟',m:'19.00',c:'halogen',x:17,y:2},
+            {n:10,s:'Ne',name:'氖',m:'20.18',c:'noble-gas',x:18,y:2},
+            {n:11,s:'Na',name:'钠',m:'22.99',c:'alkali-metal',x:1,y:3},
+            {n:12,s:'Mg',name:'镁',m:'24.31',c:'alkaline-earth',x:2,y:3},
+            {n:13,s:'Al',name:'铝',m:'26.98',c:'post-transition',x:13,y:3},
+            {n:14,s:'Si',name:'硅',m:'28.09',c:'metalloid',x:14,y:3},
+            {n:15,s:'P',name:'磷',m:'30.97',c:'nonmetal',x:15,y:3},
+            {n:16,s:'S',name:'硫',m:'32.07',c:'nonmetal',x:16,y:3},
+            {n:17,s:'Cl',name:'氯',m:'35.45',c:'halogen',x:17,y:3},
+            {n:18,s:'Ar',name:'氩',m:'39.95',c:'noble-gas',x:18,y:3},
+            {n:19,s:'K',name:'钾',m:'39.10',c:'alkali-metal',x:1,y:4},
+            {n:20,s:'Ca',name:'钙',m:'40.08',c:'alkaline-earth',x:2,y:4},
+            {n:21,s:'Sc',name:'钪',m:'44.96',c:'transition-metal',x:3,y:4},
+            {n:22,s:'Ti',name:'钛',m:'47.87',c:'transition-metal',x:4,y:4},
+            {n:23,s:'V',name:'钒',m:'50.94',c:'transition-metal',x:5,y:4},
+            {n:24,s:'Cr',name:'铬',m:'52.00',c:'transition-metal',x:6,y:4},
+            {n:25,s:'Mn',name:'锰',m:'54.94',c:'transition-metal',x:7,y:4},
+            {n:26,s:'Fe',name:'铁',m:'55.85',c:'transition-metal',x:8,y:4},
+            {n:27,s:'Co',name:'钴',m:'58.93',c:'transition-metal',x:9,y:4},
+            {n:28,s:'Ni',name:'镍',m:'58.69',c:'transition-metal',x:10,y:4},
+            {n:29,s:'Cu',name:'铜',m:'63.55',c:'transition-metal',x:11,y:4},
+            {n:30,s:'Zn',name:'锌',m:'65.38',c:'transition-metal',x:12,y:4},
+            {n:31,s:'Ga',name:'镓',m:'69.72',c:'post-transition',x:13,y:4},
+            {n:32,s:'Ge',name:'锗',m:'72.63',c:'metalloid',x:14,y:4},
+            {n:33,s:'As',name:'砷',m:'74.92',c:'metalloid',x:15,y:4},
+            {n:34,s:'Se',name:'硒',m:'78.96',c:'nonmetal',x:16,y:4},
+            {n:35,s:'Br',name:'溴',m:'79.90',c:'halogen',x:17,y:4},
+            {n:36,s:'Kr',name:'氪',m:'83.80',c:'noble-gas',x:18,y:4},
+            {n:37,s:'Rb',name:'铷',m:'85.47',c:'alkali-metal',x:1,y:5},
+            {n:38,s:'Sr',name:'锶',m:'87.62',c:'alkaline-earth',x:2,y:5},
+            {n:39,s:'Y',name:'钇',m:'88.91',c:'transition-metal',x:3,y:5},
+            {n:40,s:'Zr',name:'锆',m:'91.22',c:'transition-metal',x:4,y:5},
+            {n:41,s:'Nb',name:'铌',m:'92.91',c:'transition-metal',x:5,y:5},
+            {n:42,s:'Mo',name:'钼',m:'95.95',c:'transition-metal',x:6,y:5},
+            {n:43,s:'Tc',name:'锝',m:'98',c:'transition-metal',x:7,y:5},
+            {n:44,s:'Ru',name:'钌',m:'101.1',c:'transition-metal',x:8,y:5},
+            {n:45,s:'Rh',name:'铑',m:'102.9',c:'transition-metal',x:9,y:5},
+            {n:46,s:'Pd',name:'钯',m:'106.4',c:'transition-metal',x:10,y:5},
+            {n:47,s:'Ag',name:'银',m:'107.9',c:'transition-metal',x:11,y:5},
+            {n:48,s:'Cd',name:'镉',m:'112.4',c:'transition-metal',x:12,y:5},
+            {n:49,s:'In',name:'铟',m:'114.8',c:'post-transition',x:13,y:5},
+            {n:50,s:'Sn',name:'锡',m:'118.7',c:'post-transition',x:14,y:5},
+            {n:51,s:'Sb',name:'锑',m:'121.8',c:'metalloid',x:15,y:5},
+            {n:52,s:'Te',name:'碲',m:'127.6',c:'metalloid',x:16,y:5},
+            {n:53,s:'I',name:'碘',m:'126.9',c:'halogen',x:17,y:5},
+            {n:54,s:'Xe',name:'氙',m:'131.3',c:'noble-gas',x:18,y:5},
+            {n:55,s:'Cs',name:'铯',m:'132.9',c:'alkali-metal',x:1,y:6},
+            {n:56,s:'Ba',name:'钡',m:'137.3',c:'alkaline-earth',x:2,y:6},
+            {n:57,s:'La',name:'镧',m:'138.9',c:'lanthanide',x:3,y:6},
+            {n:58,s:'Ce',name:'铈',m:'140.1',c:'lanthanide',x:4,y:9},
+            {n:59,s:'Pr',name:'镨',m:'140.9',c:'lanthanide',x:5,y:9},
+            {n:60,s:'Nd',name:'钕',m:'144.2',c:'lanthanide',x:6,y:9},
+            {n:61,s:'Pm',name:'钷',m:'145',c:'lanthanide',x:7,y:9},
+            {n:62,s:'Sm',name:'钐',m:'150.4',c:'lanthanide',x:8,y:9},
+            {n:63,s:'Eu',name:'铕',m:'152.0',c:'lanthanide',x:9,y:9},
+            {n:64,s:'Gd',name:'钆',m:'157.3',c:'lanthanide',x:10,y:9},
+            {n:65,s:'Tb',name:'铽',m:'158.9',c:'lanthanide',x:11,y:9},
+            {n:66,s:'Dy',name:'镝',m:'162.5',c:'lanthanide',x:12,y:9},
+            {n:67,s:'Ho',name:'钬',m:'164.9',c:'lanthanide',x:13,y:9},
+            {n:68,s:'Er',name:'铒',m:'167.3',c:'lanthanide',x:14,y:9},
+            {n:69,s:'Tm',name:'铥',m:'168.9',c:'lanthanide',x:15,y:9},
+            {n:70,s:'Yb',name:'镱',m:'173.0',c:'lanthanide',x:16,y:9},
+            {n:71,s:'Lu',name:'镥',m:'175.0',c:'lanthanide',x:17,y:9},
+            {n:72,s:'Hf',name:'铪',m:'178.5',c:'transition-metal',x:4,y:6},
+            {n:73,s:'Ta',name:'钽',m:'180.9',c:'transition-metal',x:5,y:6},
+            {n:74,s:'W',name:'钨',m:'183.8',c:'transition-metal',x:6,y:6},
+            {n:75,s:'Re',name:'铼',m:'186.2',c:'transition-metal',x:7,y:6},
+            {n:76,s:'Os',name:'锇',m:'190.2',c:'transition-metal',x:8,y:6},
+            {n:77,s:'Ir',name:'铱',m:'192.2',c:'transition-metal',x:9,y:6},
+            {n:78,s:'Pt',name:'铂',m:'195.1',c:'transition-metal',x:10,y:6},
+            {n:79,s:'Au',name:'金',m:'197.0',c:'transition-metal',x:11,y:6},
+            {n:80,s:'Hg',name:'汞',m:'200.6',c:'transition-metal',x:12,y:6},
+            {n:81,s:'Tl',name:'铊',m:'204.4',c:'post-transition',x:13,y:6},
+            {n:82,s:'Pb',name:'铅',m:'207.2',c:'post-transition',x:14,y:6},
+            {n:83,s:'Bi',name:'铋',m:'209.0',c:'post-transition',x:15,y:6},
+            {n:84,s:'Po',name:'钋',m:'209',c:'metalloid',x:16,y:6},
+            {n:85,s:'At',name:'砹',m:'210',c:'halogen',x:17,y:6},
+            {n:86,s:'Rn',name:'氡',m:'222',c:'noble-gas',x:18,y:6},
+            {n:87,s:'Fr',name:'钫',m:'223',c:'alkali-metal',x:1,y:7},
+            {n:88,s:'Ra',name:'镭',m:'226',c:'alkaline-earth',x:2,y:7},
+            {n:89,s:'Ac',name:'锕',m:'227',c:'actinide',x:3,y:7},
+            {n:90,s:'Th',name:'钍',m:'232.0',c:'actinide',x:4,y:10},
+            {n:91,s:'Pa',name:'镤',m:'231.0',c:'actinide',x:5,y:10},
+            {n:92,s:'U',name:'铀',m:'238.0',c:'actinide',x:6,y:10},
+            {n:93,s:'Np',name:'镎',m:'237',c:'actinide',x:7,y:10},
+            {n:94,s:'Pu',name:'钚',m:'244',c:'actinide',x:8,y:10},
+            {n:95,s:'Am',name:'镅',m:'243',c:'actinide',x:9,y:10},
+            {n:96,s:'Cm',name:'锔',m:'247',c:'actinide',x:10,y:10},
+            {n:97,s:'Bk',name:'锫',m:'247',c:'actinide',x:11,y:10},
+            {n:98,s:'Cf',name:'锎',m:'251',c:'actinide',x:12,y:10},
+            {n:99,s:'Es',name:'锿',m:'252',c:'actinide',x:13,y:10},
+            {n:100,s:'Fm',name:'镄',m:'257',c:'actinide',x:14,y:10},
+            {n:101,s:'Md',name:'钔',m:'258',c:'actinide',x:15,y:10},
+            {n:102,s:'No',name:'锘',m:'259',c:'actinide',x:16,y:10},
+            {n:103,s:'Lr',name:'铹',m:'262',c:'actinide',x:17,y:10},
+            {n:104,s:'Rf',name:'𬬻',m:'267',c:'transition-metal',x:4,y:7},
+            {n:105,s:'Db',name:'𬭊',m:'268',c:'transition-metal',x:5,y:7},
+            {n:106,s:'Sg',name:'𬭳',m:'269',c:'transition-metal',x:6,y:7},
+            {n:107,s:'Bh',name:'𬭛',m:'270',c:'transition-metal',x:7,y:7},
+            {n:108,s:'Hs',name:'𬭶',m:'269',c:'transition-metal',x:8,y:7},
+            {n:109,s:'Mt',name:'䥑',m:'278',c:'unknown',x:9,y:7},
+            {n:110,s:'Ds',name:'𫟼',m:'281',c:'unknown',x:10,y:7},
+            {n:111,s:'Rg',name:'𬬭',m:'281',c:'unknown',x:11,y:7},
+            {n:112,s:'Cn',name:'鎶',m:'285',c:'unknown',x:12,y:7},
+            {n:113,s:'Nh',name:'鉨',m:'286',c:'unknown',x:13,y:7},
+            {n:114,s:'Fl',name:'𫓧',m:'289',c:'unknown',x:14,y:7},
+            {n:115,s:'Mc',name:'镆',m:'288',c:'unknown',x:15,y:7},
+            {n:116,s:'Lv',name:'𫟷',m:'293',c:'unknown',x:16,y:7},
+            {n:117,s:'Ts',name:'鿬',m:'294',c:'unknown',x:17,y:7},
+            {n:118,s:'Og',name:'鿫',m:'294',c:'unknown',x:18,y:7}
+        ];
+
+        const table = document.getElementById('periodicTable');
+
+        elements.forEach(el => {
+            const div = document.createElement('div');
+            div.className = `element ${el.c}`;
+            div.style.gridColumn = el.x;
+            div.style.gridRow = el.y;
+            div.innerHTML = `
+                <span class="element-number">${el.n}</span>
+                <span class="element-symbol">${el.s}</span>
+                <span class="element-name">${el.name}</span>
+                <span class="element-mass">${el.m}</span>
+            `;
+            
+            // 跟随鼠标的发光效果
+            div.addEventListener('mousemove', (e) => {
+                const rect = div.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                div.style.setProperty('--mouse-x', `${x}%`);
+                div.style.setProperty('--mouse-y', `${y}%`);
+            });
+            
+            table.appendChild(div);
+        });
+    </script>
+</body>
+</html>
