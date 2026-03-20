@@ -1,0 +1,653 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    min-height: 100vh;
+    color: #ffffff;
+    overflow-x: auto;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1800px;
+    margin: 0 auto;
+    position: relative;
+}
+
+h1 {
+    text-align: center;
+    font-size: 2.8rem;
+    margin-bottom: 40px;
+    background: linear-gradient(90deg, #00d4ff, #7c3aed, #ff006e, #00d4ff);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: titleGlow 3s ease-in-out infinite, gradientShift 5s ease infinite;
+    letter-spacing: 3px;
+    font-weight: 700;
+}
+
+@keyframes titleGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.6));
+    }
+    50% {
+        filter: drop-shadow(0 0 40px rgba(124, 58, 237, 0.9));
+    }
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% center;
+    }
+    100% {
+        background-position: 200% center;
+    }
+}
+
+/* 发光按钮样式 */
+.glow-btn {
+    position: fixed;
+    padding: 15px 45px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #00d4ff, #7c3aed);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    z-index: 1000;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 
+        0 0 25px rgba(0, 212, 255, 0.6),
+        0 0 50px rgba(124, 58, 237, 0.4),
+        0 0 75px rgba(0, 212, 255, 0.2),
+        inset 0 0 20px rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+    animation: btnPulse 2s ease-in-out infinite;
+    white-space: nowrap;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.glow-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #00d4ff, #7c3aed, #ff006e);
+    z-index: -1;
+    filter: blur(15px);
+    opacity: 0.7;
+    animation: btnGlow 2s ease-in-out infinite;
+}
+
+@keyframes btnPulse {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.05);
+    }
+}
+
+@keyframes btnGlow {
+    0%, 100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* 周期标签 */
+.period-labels {
+    position: absolute;
+    left: -40px;
+    top: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.period-label {
+    width: 35px;
+    height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+}
+
+/* 族标签 */
+.group-labels {
+    display: grid;
+    grid-template-columns: repeat(18, 1fr);
+    gap: 4px;
+    margin-left: 0;
+    margin-bottom: 8px;
+    padding: 0 4px;
+}
+
+.group-label {
+    min-width: 65px;
+    text-align: center;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    padding: 8px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+}
+
+/* 元素周期表布局 */
+.periodic-table {
+    display: grid;
+    grid-template-columns: repeat(18, 1fr);
+    grid-template-rows: repeat(7, 1fr);
+    gap: 4px;
+    margin-left: 0;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.element {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    min-width: 65px;
+    min-height: 65px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.element::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.element:hover::before {
+    opacity: 1;
+}
+
+.element:hover {
+    transform: scale(1.25);
+    z-index: 100;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 50px rgba(255, 255, 255, 0.3);
+    filter: brightness(1.2);
+}
+
+.element .number {
+    font-size: 0.75rem;
+    font-weight: bold;
+    opacity: 0.9;
+    position: absolute;
+    top: 5px;
+    left: 7px;
+}
+
+.element .symbol {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 4px 0 2px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.element .name {
+    font-size: 0.65rem;
+    opacity: 0.95;
+    margin-bottom: 2px;
+}
+
+.element .mass {
+    font-size: 0.55rem;
+    opacity: 0.8;
+    position: absolute;
+    bottom: 5px;
+}
+
+/* 镧系和锕系元素容器 */
+.lanthanide-series,
+.actinide-series {
+    display: flex;
+    gap: 4px;
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-x: auto;
+    padding-bottom: 20px;
+}
+
+.series-label {
+    min-width: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0 10px;
+}
+
+.lanthanide-series .element,
+.actinide-series .element {
+    min-width: 58px;
+    min-height: 58px;
+    flex-shrink: 0;
+}
+
+.lanthanide-series .element .symbol,
+.actinide-series .element .symbol {
+    font-size: 1.2rem;
+}
+
+.lanthanide-series .element .name,
+.actinide-series .element .name {
+    font-size: 0.55rem;
+}
+
+/* 元素类别颜色 - 增强发光效果 */
+.alkali-metal {
+    background: linear-gradient(145deg, #ff6b6b, #ee5a24);
+    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.5), 0 0 30px rgba(255, 107, 107, 0.2);
+}
+
+.alkaline-earth {
+    background: linear-gradient(145deg, #ffa502, #ff7f50);
+    box-shadow: 0 4px 20px rgba(255, 165, 2, 0.5), 0 0 30px rgba(255, 165, 2, 0.2);
+}
+
+.transition {
+    background: linear-gradient(145deg, #70a1ff, #5352ed);
+    box-shadow: 0 4px 20px rgba(112, 161, 255, 0.5), 0 0 30px rgba(112, 161, 255, 0.2);
+}
+
+.post-transition {
+    background: linear-gradient(145deg, #7bed9f, #2ed573);
+    box-shadow: 0 4px 20px rgba(123, 237, 159, 0.5), 0 0 30px rgba(123, 237, 159, 0.2);
+}
+
+.metalloid {
+    background: linear-gradient(145deg, #5f27cd, #341f97);
+    box-shadow: 0 4px 20px rgba(95, 39, 205, 0.5), 0 0 30px rgba(95, 39, 205, 0.2);
+}
+
+.nonmetal {
+    background: linear-gradient(145deg, #a29bfe, #6c5ce7);
+    box-shadow: 0 4px 20px rgba(162, 155, 254, 0.5), 0 0 30px rgba(162, 155, 254, 0.2);
+}
+
+.halogen {
+    background: linear-gradient(145deg, #fd79a8, #e84393);
+    box-shadow: 0 4px 20px rgba(253, 121, 168, 0.5), 0 0 30px rgba(253, 121, 168, 0.2);
+}
+
+.noble-gas {
+    background: linear-gradient(145deg, #fdcb6e, #f39c12);
+    box-shadow: 0 4px 20px rgba(253, 203, 110, 0.5), 0 0 30px rgba(253, 203, 110, 0.2);
+}
+
+.lanthanide {
+    background: linear-gradient(145deg, #e056fd, #be2edd);
+    box-shadow: 0 4px 20px rgba(224, 86, 253, 0.5), 0 0 30px rgba(224, 86, 253, 0.2);
+}
+
+.actinide {
+    background: linear-gradient(145deg, #ff7675, #d63031);
+    box-shadow: 0 4px 20px rgba(255, 118, 117, 0.5), 0 0 30px rgba(255, 118, 117, 0.2);
+}
+
+/* 空位置 */
+.element:empty {
+    background: transparent;
+    box-shadow: none;
+    cursor: default;
+    border: none;
+}
+
+/* 图例 */
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.legend-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.legend-color {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.legend-color.alkali-metal {
+    background: linear-gradient(145deg, #ff6b6b, #ee5a24);
+}
+
+.legend-color.alkaline-earth {
+    background: linear-gradient(145deg, #ffa502, #ff7f50);
+}
+
+.legend-color.transition {
+    background: linear-gradient(145deg, #70a1ff, #5352ed);
+}
+
+.legend-color.post-transition {
+    background: linear-gradient(145deg, #7bed9f, #2ed573);
+}
+
+.legend-color.metalloid {
+    background: linear-gradient(145deg, #5f27cd, #341f97);
+}
+
+.legend-color.nonmetal {
+    background: linear-gradient(145deg, #a29bfe, #6c5ce7);
+}
+
+.legend-color.halogen {
+    background: linear-gradient(145deg, #fd79a8, #e84393);
+}
+
+.legend-color.noble-gas {
+    background: linear-gradient(145deg, #fdcb6e, #f39c12);
+}
+
+.legend-color.lanthanide {
+    background: linear-gradient(145deg, #e056fd, #be2edd);
+}
+
+.legend-color.actinide {
+    background: linear-gradient(145deg, #ff7675, #d63031);
+}
+
+/* 滚动条样式 */
+.lanthanide-series::-webkit-scrollbar,
+.actinide-series::-webkit-scrollbar {
+    height: 8px;
+}
+
+.lanthanide-series::-webkit-scrollbar-track,
+.actinide-series::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.lanthanide-series::-webkit-scrollbar-thumb,
+.actinide-series::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.lanthanide-series::-webkit-scrollbar-thumb:hover,
+.actinide-series::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* 响应式设计 */
+@media (max-width: 1600px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .period-labels {
+        left: -35px;
+    }
+    
+    .period-label {
+        width: 30px;
+        height: 58px;
+        font-size: 0.9rem;
+    }
+    
+    .group-label {
+        min-width: 58px;
+        font-size: 0.85rem;
+    }
+    
+    .element {
+        min-width: 58px;
+        min-height: 58px;
+    }
+    
+    .element .symbol {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    h1 {
+        font-size: 2.2rem;
+    }
+    
+    .period-labels {
+        left: -30px;
+        top: 70px;
+    }
+    
+    .period-label {
+        width: 25px;
+        height: 50px;
+        font-size: 0.8rem;
+    }
+    
+    .group-label {
+        min-width: 50px;
+        font-size: 0.75rem;
+        padding: 6px 0;
+    }
+    
+    .element {
+        min-width: 50px;
+        min-height: 50px;
+    }
+    
+    .element .symbol {
+        font-size: 1.1rem;
+    }
+    
+    .element .name {
+        display: none;
+    }
+    
+    .glow-btn {
+        padding: 12px 35px;
+        font-size: 1rem;
+    }
+    
+    .lanthanide-series .element,
+    .actinide-series .element {
+        min-width: 50px;
+        min-height: 50px;
+    }
+}
+
+@media (max-width: 900px) {
+    body {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 30px;
+    }
+    
+    .periodic-table {
+        gap: 2px;
+        padding: 10px;
+    }
+    
+    .period-labels {
+        left: -25px;
+    }
+    
+    .period-label {
+        width: 22px;
+        height: 42px;
+        font-size: 0.7rem;
+    }
+    
+    .group-label {
+        min-width: 42px;
+        font-size: 0.65rem;
+    }
+    
+    .element {
+        min-width: 42px;
+        min-height: 42px;
+    }
+    
+    .element .symbol {
+        font-size: 0.95rem;
+    }
+    
+    .element .mass {
+        display: none;
+    }
+    
+    .element .number {
+        font-size: 0.6rem;
+        top: 3px;
+        left: 5px;
+    }
+    
+    .glow-btn {
+        padding: 10px 28px;
+        font-size: 0.85rem;
+    }
+    
+    .legend {
+        gap: 10px;
+        padding: 15px;
+    }
+    
+    .legend-item {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+    
+    .legend-color {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .series-label {
+        min-width: 55px;
+        font-size: 0.8rem;
+    }
+    
+    .lanthanide-series .element,
+    .actinide-series .element {
+        min-width: 42px;
+        min-height: 42px;
+    }
+    
+    .lanthanide-series .element .symbol,
+    .actinide-series .element .symbol {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 600px) {
+    h1 {
+        font-size: 1.5rem;
+        letter-spacing: 2px;
+    }
+    
+    .period-labels {
+        display: none;
+    }
+    
+    .group-labels {
+        display: none;
+    }
+    
+    .periodic-table {
+        grid-template-columns: repeat(9, 1fr);
+        grid-template-rows: auto;
+    }
+    
+    .element {
+        min-width: 38px;
+        min-height: 38px;
+    }
+    
+    .element .symbol {
+        font-size: 0.85rem;
+    }
+    
+    .glow-btn {
+        padding: 8px 22px;
+        font-size: 0.75rem;
+    }
+    
+    .lanthanide-series,
+    .actinide-series {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .series-label {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+}
